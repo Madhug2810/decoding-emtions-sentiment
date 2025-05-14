@@ -1,0 +1,24 @@
+This new product is AMAZING! I love it!             0.000  0.349  0.651   
+I'm so disappointed, this is a terrible product.    0.565  0.435  0.000   
+This is okay, nothing special.                      0.315  0.419  0.265   
+I can't believe how bad this is! 😠                  0.000  0.614  0.386   
+The service is good, but the quality is not great.  0.309  0.556  0.136   
+I'm really enjoying the new feature, thank you!     0.000  0.481  0.519   
+This is a terrible experience!                      0.531  0.469  0.000   
+I am so excited about the new update!               0.000  0.668  0.332   
+I really like the new design.                       0.000  0.589  0.411   
+I am really frustrated with the support.            0.355  0.385  0.260   
+
+                                                    compound  
+This new product is AMAZING! I love it!               0.8838  
+I'm so disappointed, this is a terrible product.     -0.7574  
+This is okay, nothing special.                       -0.0920  
+I can't believe how bad this is! 😠                    0.4840  
+The service is good, but the quality is not great.   -0.5409  
+I'm really enjoying the new feature, thank you!       0.7569  
+This is a terrible experience!                       -0.5255  
+I am so excited about the new update!                 0.4561  
+I really like the new design.                         0.4201  
+I am really frustrated with the support.             -0.2484  
+Overall Sentiment: Neutral
+[nltk_data] Downloading package vader_lexicon to /root/nltk_data...
