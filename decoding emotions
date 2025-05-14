@@ -1,0 +1,105 @@
+# Import necessary libraries
+import re
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+from nltk.tokenize import word_tokenize
+from collections import Counter
+
+# Download VADER lexicon if you haven't already
+import nltk
+try:
+    nltk.data.find('sentiment/vader_lexicon.zip')
+except nltk.downloader.DownloadError:
+    nltk.download('vader_lexicon')
+try:
+    nltk.data.find('tokenizers/punkt/PY3/english.pickle')
+except nltk.downloader.DownloadError:
+    nltk.download('punkt')
+
+class EmotionDecoder:
+    def __init__(self):
+        """Initializes the EmotionDecoder with a sentiment analyzer."""
+        self.analyzer = SentimentIntensityAnalyzer()
+        self.emotion_lexicon = {
+            'positive': ['happy', 'joyful', 'excited', 'grateful', 'optimistic', 'love', 'amazing', 'best', 'wonderful'],
+            'negative': ['sad', 'angry', 'frustrated', 'disappointed', 'terrible', 'awful', 'hate', 'worst', 'miserable'],
+            'surprise': ['surprised', 'shocked', 'amazed', 'unbelievable', 'wow'],
+            'fear': ['scared', 'afraid', 'nervous', 'anxious', 'terrified'],
+            'disgust': ['disgusted', 'revolted', 'sick', 'nasty', 'yuck']
+            # You can expand this lexicon with more emotion-related words
+        }
+
+    def clean_text(self, text):
+        """Removes unwanted characters and converts text to lowercase."""
+        text = re.sub(r'[^a-zA-Z\s]', '', text)  # Remove non-alphabetic characters
+        return text.lower()
+
+    def analyze_sentiment(self, text):
+        """Analyzes the sentiment of the text using VADER."""
+        cleaned_text = self.clean_text(text)
+        sentiment_scores = self.analyzer.polarity_scores(cleaned_text)
+        return sentiment_scores
+
+    def categorize_emotion(self, text, sentiment_scores, keyword_weight=0.6):
+        """Categorizes the emotion based on sentiment and keyword matching."""
+        emotion_scores = Counter()
+        words = word_tokenize(self.clean_text(text))
+
+        # Keyword-based emotion detection
+        for emotion, keywords in self.emotion_lexicon.items():
+            for word in words:
+                if word in keywords:
+                    emotion_scores[emotion] += keyword_weight
+
+        # Sentiment-based emotion influence
+        if sentiment_scores['compound'] > 0.2:
+            emotion_scores['positive'] += (1 - keyword_weight) * sentiment_scores['compound']
+        elif sentiment_scores['compound'] < -0.2:
+            emotion_scores['negative'] += (1 - keyword_weight) * abs(sentiment_scores['compound'])
+
+        if not emotion_scores:
+            return "neutral"
+        else:
+            return emotion_scores.most_common(1)[0][0]
+
+    def decode_conversation(self, conversation_data):
+        """Analyzes the sentiment and emotion of each turn in a conversation."""
+        results = []
+        for turn in conversation_data:
+            if isinstance(turn, dict) and 'text' in turn:
+                text = turn['text']
+                sentiment = self.analyze_sentiment(text)
+                emotion = self.categorize_emotion(text, sentiment)
+                results.append({'text': text, 'sentiment_scores': sentiment, 'emotion': emotion})
+            elif isinstance(turn, str):
+                sentiment = self.analyze_sentiment(turn)
+                emotion = self.categorize_emotion(turn, sentiment)
+                results.append({'text': turn, 'sentiment_scores': sentiment, 'emotion': emotion})
+            else:
+                results.append({'text': str(turn), 'sentiment_scores': {}, 'emotion': 'unknown'})
+        return results
+
+# Example social media conversation data (simulated source code structure)
+social_media_data = [
+    {'user': 'User1', 'timestamp': '2025-05-14 10:00:00', 'text': 'Just had the most amazing day! Feeling so happy 😊'},
+    {'user': 'User2', 'timestamp': '2025-05-14 10:05:00', 'reply_to': 'User1', 'text': 'That's wonderful to hear!'},
+    {'user': 'User3', 'timestamp': '2025-05-14 10:10:00', 'text': 'This traffic is absolutely terrible 😠 So frustrating!'},
+    {'user': 'User1', 'timestamp': '2025-05-14 10:15:00', 'reply_to': 'User3', 'text': 'Oh no, that sounds awful.'},
+    {'user': 'User4', 'timestamp': '2025-05-14 10:20:00', 'text': 'Got a surprise gift today! So unexpected! 😮'},
+    "Feeling a bit down today 😔",
+    "This movie is the best thing I've ever seen! 😍",
+    123  # Example of non-text data
+]
+
+# Instantiate the EmotionDecoder
+decoder = EmotionDecoder()
+
+# Decode the conversation data
+emotion_analysis_results = decoder.decode_conversation(social_media_data)
+
+# Output the results
+print("Emotion Analysis of Social Media Conversation:")
+for result in emotion_analysis_results:
+    print(f"Text: {result['text']}")
+    print(f"  Sentiment Scores: {result['sentiment_scores']}")
+    print(f"  Detected Emotion: {result['emotion']}")
+    print("-" * 30)
