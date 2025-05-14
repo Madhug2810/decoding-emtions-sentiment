@@ -1,0 +1,67 @@
+import nltk
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+import pandas as pd
+# Download necessary NLTK data if not already available
+try:
+    nltk.data.find('sentiment/vader_lexicon.zip')
+except LookupError:
+    nltk.download('vader_lexicon')
+
+# Sample tweet data (replace with actual data collection)
+tweets = [
+    "This new product is AMAZING! I love it!",
+    "I'm so disappointed, this is a terrible product.",
+    "This is okay, nothing special.",
+    "I can't believe how bad this is! 😠",
+    "The service is good, but the quality is not great.",
+    "I'm really enjoying the new feature, thank you!",
+    "This is a terrible experience!",
+    "I am so excited about the new update!",
+    "I really like the new design.",
+    "I am really frustrated with the support."
+]
+
+# Create a SentimentIntensityAnalyzer object
+sid = SentimentIntensityAnalyzer()
+
+# Perform sentiment analysis on each tweet
+sentiment_scores = []
+for tweet in tweets:
+    scores = sid.polarity_scores(tweet)
+    sentiment_scores.append(scores)
+
+# Create a Pandas DataFrame for better visualization
+df = pd.DataFrame(sentiment_scores, index=tweets)
+
+# Print the results
+print(df)
+
+# Example of visualizing sentiment (using matplotlib - example code only)
+#import matplotlib.pyplot as plt
+#df['compound'].plot(kind='bar')
+#plt.title('Sentiment Scores for Tweets')
+#plt.xlabel('Tweets')
+#plt.ylabel('Compound Sentiment Score')
+#plt.show()
+
+# Function to determine overall sentiment
+def determine_overall_sentiment(scores_list):
+  """
+  Determines the overall sentiment of a list of sentiment scores.
+  """
+  positive_count = 0
+  negative_count = 0
+  for scores in scores_list:
+    if scores['compound'] >= 0.05:
+      positive_count += 1
+    elif scores['compound'] <= -0.05:
+      negative_count += 1
+  if positive_count > negative_count:
+    return "Positive"
+  elif negative_count > positive_count:
+    return "Negative"
+  else:
+    return "Neutral"
+# Print Overall sentiment
+overall_sentiment = determine_overall_sentiment(sentiment_scores)
+print(f"Overall Sentiment: {overall_sentiment}")
